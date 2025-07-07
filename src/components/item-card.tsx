@@ -20,16 +20,16 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, hideFeaturedChip = fal
   };
 
   return (
-    <Card className="overflow-hidden h-full">
+    <Card className="overflow-hidden">
       <div className="relative">
         <img
           src={item.images[0]}
           alt={item.name}
           className="w-full h-auto object-cover"
           style={{
-            aspectRatio: 'auto', // Let the image maintain its natural aspect ratio
-            maxHeight: '400px', // Prevent extremely tall images
-            minHeight: '200px' // Ensure minimum height for very wide images
+            aspectRatio: 'auto', // Preserve natural aspect ratio
+            maxWidth: '100%',
+            height: 'auto'
           }}
         />
         {item.featured && !hideFeaturedChip && (

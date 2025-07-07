@@ -22,25 +22,52 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ images, onChange }) =>
     setIsUploading(true);
     
     // Process each file
-    Array.from(files).forEach(file => {
-      // Create a FileReader to read the image
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          // In a real app, you would upload this to a server
-          // For demo purposes, we'll use the HeroUI image service with a unique ID
-          const uniqueId = Math.random().toString(36).substring(2, 10);
-          const category = "furniture"; // Using furniture category for antiques
-          const newImage = `https://img.heroui.chat/image/${category}?w=800&h=600&u=${uniqueId}`;
-          
-          onChange([...images, newImage]);
-          setIsUploading(false);
+    const filePromises = Array.from(files).map(file => {
+      return new Promise<string>((resolve, reject) => {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          reject(new Error('Please select only image files'));
+          return;
         }
-      };
-      
-      // Read the file as a data URL
-      reader.readAsDataURL(file);
+        
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+          reject(new Error('File size must be less than 5MB'));
+          return;
+        }
+        
+        // Create a FileReader to read the image
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            // Use the actual file data as base64 data URL
+            resolve(event.target.result as string);
+          } else {
+            reject(new Error('Failed to read file'));
+          }
+        };
+        
+        reader.onerror = () => {
+          reject(new Error('Failed to read file'));
+        };
+        
+        // Read the file as a data URL (base64)
+        reader.readAsDataURL(file);
+      });
     });
+    
+    // Wait for all files to be processed
+    Promise.all(filePromises)
+      .then(newImages => {
+        // Add the new images to the existing ones
+        onChange([...images, ...newImages]);
+        setIsUploading(false);
+      })
+      .catch(error => {
+        console.error('Error uploading files:', error);
+        setIsUploading(false);
+      });
     
     // Clear the input for future uploads
     if (fileInputRef.current) {
@@ -51,7 +78,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ images, onChange }) =>
   // Trigger file input click
   const triggerFileInput = (captureMethod?: string) => {
     if (fileInputRef.current) {
-      fileInputRef.current.capture = captureMethod || '';
+      if (captureMethod) {
+        fileInputRef.current.setAttribute('capture', captureMethod);
+      } else {
+        fileInputRef.current.removeAttribute('capture');
+      }
       fileInputRef.current.click();
     }
   };
@@ -126,7 +157,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ images, onChange }) =>
           isDisabled={isUploading}
           isLoading={isUploading}
         >
-          Upload Images
+          {isUploading ? "Uploading..." : "Upload Images"}
         </Button>
         
         <Button
@@ -151,8 +182,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ images, onChange }) =>
       </div>
       
       <p className="text-xs text-default-500">
-        Note: In a real application, images would be uploaded to a server.
-        For this demo, we're using placeholder images.
+        Upload actual images (max 5MB each, 8 images total).
       </p>
     </div>
   );

@@ -288,11 +288,11 @@ export const Catalog: React.FC = () => {
         </p>
       </div>
 
-      {/* Pinterest-style Masonry Grid */}
+      {/* True Masonry Layout using CSS columns */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-8">
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 mb-8">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-            <Card key={i} className="w-full">
+            <Card key={i} className="w-full mb-6 break-inside-avoid">
               <CardBody className="flex items-center justify-center">
                 <div className="animate-pulse flex flex-col items-center space-y-4 w-full">
                   <div 
@@ -328,9 +328,11 @@ export const Catalog: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-8">
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 mb-8">
             {currentItems.map((item) => (
-              <ItemCard key={item.id} item={item} />
+              <div key={item.id} className="mb-6 break-inside-avoid">
+                <ItemCard item={item} />
+              </div>
             ))}
           </div>
           
