@@ -99,11 +99,16 @@ export const AdminDashboard: React.FC = () => {
     }
   }, [activeTab]);
 
+  // Sort items alphabetically by name
   const filteredItems = React.useMemo(() => {
-    if (selectedStore === "all") {
-      return items;
+    let filtered = items;
+    
+    if (selectedStore !== "all") {
+      filtered = items.filter(item => item.storeLocation === selectedStore);
     }
-    return items.filter(item => item.storeLocation === selectedStore);
+    
+    // Sort alphabetically by name (case-insensitive)
+    return filtered.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
   }, [items, selectedStore]);
 
   const handleStoreChange = (key: React.Key) => {
@@ -303,9 +308,14 @@ export const AdminDashboard: React.FC = () => {
           
           <Card className="mt-6">
             <CardHeader className="flex justify-between">
-              <h2 className="text-xl font-semibold">
-                {selectedStore === "all" ? "All Items" : selectedStore}
-              </h2>
+              <div>
+                <h2 className="text-xl font-semibold">
+                  {selectedStore === "all" ? "All Items" : selectedStore}
+                </h2>
+                <p className="text-default-500 text-sm">
+                  Items sorted alphabetically by name
+                </p>
+              </div>
             </CardHeader>
             <Divider />
             <CardBody>
@@ -336,7 +346,12 @@ export const AdminDashboard: React.FC = () => {
                 <div className="responsive-table">
                   <Table removeWrapper aria-label="Items table">
                     <TableHeader>
-                      <TableColumn>ITEM</TableColumn>
+                      <TableColumn>
+                        <div className="flex items-center gap-2">
+                          ITEM
+                          <Icon icon="lucide:arrow-up-a-z" className="w-4 h-4 text-default-400" />
+                        </div>
+                      </TableColumn>
                       <TableColumn>CATEGORY</TableColumn>
                       <TableColumn>PRICE</TableColumn>
                       <TableColumn>LOCATION</TableColumn>
