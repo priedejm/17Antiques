@@ -1,55 +1,43 @@
 import React from "react";
-import { Hero } from "./components/hero";
-import { AboutSection } from "./components/about-section";
-import { SisterStore } from "./components/sister-store";
-import { LocationSection } from "./components/location-section";
-import { Footer } from "./components/footer";
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 import { Navbar } from "./components/navbar";
-import { FeaturedCollection } from "./components/featured-collection";
-import { CollectionPage } from "./components/collection-page";
+import { Footer } from "./components/footer";
+import { Home } from "./pages/home";
+import { Catalog } from "./pages/catalog";
+import { ItemDetail } from "./pages/item-detail";
+import { Contact } from "./pages/contact";
+import { AdminLogin } from "./pages/admin-login";
+import { AdminDashboard } from "./pages/admin-dashboard";
+import { AdminItemForm } from "./pages/admin-item-form";
+import { AdminRoute } from "./components/admin-route";
+import { AuthProvider } from "./context/auth-context";
+import { ScrollToTop } from "./components/scroll-to-top";
 
-export default function App() {
-  const [currentPage, setCurrentPage] = React.useState("home");
-  
-  // Simple routing function
-  React.useEffect(() => {
-    const handleRouteChange = () => {
-      const path = window.location.pathname;
-      if (path === "/collection") {
-        setCurrentPage("collection");
-      } else {
-        setCurrentPage("home");
-      }
-    };
-    
-    // Initial route check
-    handleRouteChange();
-    
-    // Listen for popstate events (back/forward navigation)
-    window.addEventListener("popstate", handleRouteChange);
-    
-    return () => {
-      window.removeEventListener("popstate", handleRouteChange);
-    };
-  }, []);
-  
+const App: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main>
-        {currentPage === "home" ? (
-          <>
-            <Hero />
-            <AboutSection />
-            <FeaturedCollection />
-            <SisterStore />
-            <LocationSection />
-          </>
-        ) : (
-          <CollectionPage />
-        )}
-      </main>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <Router>
+        <ScrollToTop />
+        <div className="flex flex-col min-h-screen">
+          <Navbar />
+          <main className="flex-grow">
+            <Switch>
+              <Route exact path="/" component={Home} />
+              <Route exact path="/catalog" component={Catalog} />
+              <Route path="/catalog/:id" component={ItemDetail} />
+              <Route path="/contact" component={Contact} />
+              <Route path="/admin/login" component={AdminLogin} />
+              <AdminRoute exact path="/admin/dashboard" component={AdminDashboard} />
+              <AdminRoute path="/admin/items/new" component={AdminItemForm} />
+              <AdminRoute path="/admin/items/:id/edit" component={AdminItemForm} />
+              <Redirect to="/" />
+            </Switch>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
   );
-}
+};
+
+export default App;
