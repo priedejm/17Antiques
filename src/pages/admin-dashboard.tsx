@@ -27,7 +27,7 @@ import {
   Tab
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { getItems, deleteItem } from "../data/items";
+import { getItems } from "../data/items";
 import { Item, StoreLocation, CategoryItem, PeriodItem, ConditionItem } from "../types/item";
 import { MetadataManager } from "../components/metadata-manager";
 import { 
@@ -116,7 +116,9 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const confirmDelete = (item: Item) => {
+    console.log('confirmDelete called with item:', item);
     setItemToDelete(item);
+    console.log('Opening modal...');
     onOpen();
   };
 
@@ -124,13 +126,28 @@ export const AdminDashboard: React.FC = () => {
     if (!itemToDelete) return;
     
     try {
-      const success = await deleteItem(itemToDelete.id);
+      const response = await fetch('/delete-item.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: itemToDelete.id }),
+      });
       
-      if (success) {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
         setItems(items.filter(item => item.id !== itemToDelete.id));
+      } else {
+        throw new Error(result.error || 'Failed to delete item');
       }
     } catch (error) {
       console.error("Failed to delete item:", error);
+      alert(`Error deleting item: ${error}`);
     } finally {
       onClose();
       setItemToDelete(null);
@@ -384,40 +401,36 @@ export const AdminDashboard: React.FC = () => {
                           <TableCell>{formatDate(item.updatedAt)}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Dropdown>
-                                <DropdownTrigger>
-                                  <Button 
-                                    isIconOnly 
-                                    variant="light" 
-                                    size="sm"
-                                  >
-                                    <Icon icon="lucide:more-vertical" />
-                                  </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu aria-label="Item actions">
-                                  <DropdownItem
-                                    as={RouterLink}
-                                    to={`/catalog/${item.id}`}
-                                    startContent={<Icon icon="lucide:eye" />}
-                                  >
-                                    View
-                                  </DropdownItem>
-                                  <DropdownItem
-                                    as={RouterLink}
-                                    to={`/admin/items/${item.id}/edit`}
-                                    startContent={<Icon icon="lucide:edit" />}
-                                  >
-                                    Edit
-                                  </DropdownItem>
-                                  <DropdownItem
-                                    startContent={<Icon icon="lucide:trash" className="text-danger" />}
-                                    className="text-danger"
-                                    onPress={() => confirmDelete(item)}
-                                  >
-                                    Delete
-                                  </DropdownItem>
-                                </DropdownMenu>
-                              </Dropdown>
+                              <Button
+                                as={RouterLink}
+                                to={`/catalog/${item.id}`}
+                                isIconOnly
+                                variant="light"
+                                size="sm"
+                                title="View"
+                              >
+                                <Icon icon="lucide:eye" />
+                              </Button>
+                              <Button
+                                as={RouterLink}
+                                to={`/admin/items/${item.id}/edit`}
+                                isIconOnly
+                                variant="light"
+                                size="sm"
+                                title="Edit"
+                              >
+                                <Icon icon="lucide:edit" />
+                              </Button>
+                              <button
+                                onClick={() => {
+                                  console.log('Delete button clicked for item:', item.id);
+                                  confirmDelete(item);
+                                }}
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-danger-50 transition-colors"
+                                title="Delete"
+                              >
+                                <Icon icon="lucide:trash" className="w-4 h-4 text-danger" />
+                              </button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -471,25 +484,27 @@ export const AdminDashboard: React.FC = () => {
       </Tabs>
       
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        {(onClose) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">Confirm Deletion</ModalHeader>
-            <ModalBody>
-              <p>
-                Are you sure you want to delete <strong>{itemToDelete?.name}</strong>?
-                This action cannot be undone.
-              </p>
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="flat" onPress={onClose}>
-                Cancel
-              </Button>
-              <Button color="danger" onPress={handleDelete}>
-                Delete
-              </Button>
-            </ModalFooter>
-          </>
-        )}
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Confirm Deletion</ModalHeader>
+              <ModalBody>
+                <p>
+                  Are you sure you want to delete <strong>{itemToDelete?.name}</strong>?
+                  This action cannot be undone and will delete all associated images.
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="flat" onPress={onClose}>
+                  Cancel
+                </Button>
+                <Button color="danger" onPress={handleDelete}>
+                  Delete
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
       </Modal>
     </div>
   );

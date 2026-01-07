@@ -11,8 +11,11 @@ export const Navbar: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
 
   const menuItems = [
-    { name: "About", path: "/#about" },
-    { name: "Catalog", path: "/catalog" },
+    { name: "Case goods", path: "/catalog?category=Case+goods" },
+    { name: "Tabletop", path: "/catalog?category=Tabletop" },
+    { name: "Mirrors", path: "/catalog?category=Mirrors" },
+    { name: "Art", path: "/catalog?category=Art" },
+    { name: "Lighting", path: "/catalog?category=Lighting" },
   ];
 
   React.useEffect(() => {
@@ -30,13 +33,6 @@ export const Navbar: React.FC = () => {
   }, []);
 
   const handleHashLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, hash: string) => {
-    if (window.location.pathname === '/') {
-      e.preventDefault();
-      const element = document.getElementById(hash.substring(1));
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
     setIsMenuOpen(false);
   };
 
@@ -99,7 +95,6 @@ export const Navbar: React.FC = () => {
               to={item.path} 
               color="foreground"
               className="font-medium whitespace-nowrap relative group transition-all duration-300 hover:text-primary"
-              onClick={(e) => item.path.startsWith('/#') && handleHashLinkClick(e, item.path)}
             >
               {item.name}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
@@ -202,13 +197,7 @@ export const Navbar: React.FC = () => {
               color="foreground"
               className="w-full group relative py-4 px-2 transition-all duration-300 hover:text-primary hover:bg-primary-50 rounded-lg"
               size="lg"
-              onClick={(e) => {
-                if (item.path.startsWith('/#')) {
-                  handleHashLinkClick(e, item.path);
-                } else {
-                  handleNavLinkClick();
-                }
-              }}
+              onClick={handleNavLinkClick}
             >
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-primary rounded-full opacity-0 transition-all duration-300 group-hover:opacity-100 transform scale-0 group-hover:scale-100" />

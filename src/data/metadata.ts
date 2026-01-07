@@ -3,13 +3,11 @@ import { CategoryItem, PeriodItem, ConditionItem } from "../types/item";
 
 // Initial sample data
 let categories: CategoryItem[] = [
-  { id: uuidv4(), name: "Furniture" },
-  { id: uuidv4(), name: "Lighting" },
-  { id: uuidv4(), name: "Silver" },
-  { id: uuidv4(), name: "Ceramics" },
+  { id: uuidv4(), name: "Case goods" },
+  { id: uuidv4(), name: "Tabletop" },
+  { id: uuidv4(), name: "Mirrors" },
   { id: uuidv4(), name: "Art" },
-  { id: uuidv4(), name: "Textiles" },
-  { id: uuidv4(), name: "Books" },
+  { id: uuidv4(), name: "Lighting" },
 ];
 
 let periods: PeriodItem[] = [

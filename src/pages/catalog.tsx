@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import { 
   Tabs, 
   Tab, 
@@ -17,6 +18,7 @@ import { getItems, getItemsByStore } from "../data/items";
 import { Item, StoreLocation } from "../types/item";
 
 export const Catalog: React.FC = () => {
+  const location = useLocation();
   const [items, setItems] = React.useState<Item[]>([]);
   const [filteredItems, setFilteredItems] = React.useState<Item[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -66,7 +68,14 @@ export const Catalog: React.FC = () => {
   React.useEffect(() => {
     // Ensure the page is scrolled to the top when component mounts
     window.scrollTo(0, 0);
-  }, []);
+    
+    // Check for category query parameter
+    const searchParams = new URLSearchParams(location.search);
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [location.search]);
 
   React.useEffect(() => {
     let result = [...items];
